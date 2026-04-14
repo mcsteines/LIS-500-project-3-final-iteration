@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Machine Learning Project: Teachable Machine image classifier trained on 200 original images, with reflections on Joy Buolamwini's Unmasking AI">
+    <title>ML Project | LIS 500 Project</title>
+    <link rel="stylesheet" href="stylepage.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- TensorFlow.js + Teachable Machine -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+
+    <style>
+        .ml-layout {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 2.5rem;
+            align-items: start;
+            margin-top: 2rem;
+        }
+
+        .ml-sidebar {
+            position: sticky;
+            top: 1.5rem;
+        }
+
+        .ml-sidebar nav {
+            background: #2c3e50;
+            padding: 0;
+            margin: 0;
+        }
+
+        .ml-sidebar nav h3 {
+            color: #fff;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.8rem 1rem 0.5rem;
+            margin: 0;
+            border-bottom: 1px solid #3d5166;
+        }
+
+        .ml-sidebar nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0.4rem 0;
+        }
+
+        .ml-sidebar nav ul li {
+            margin: 0;
+        }
+
+        .ml-sidebar nav ul li a {
+            display: block;
+            color: #ccc;
+            text-decoration: none;
+            padding: 0.45rem 1rem;
+            font-size: 0.9rem;
+            border-left: 3px solid transparent;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+
+        .ml-sidebar nav ul li a:hover,
+        .ml-sidebar nav ul li a.active {
+            background: #3d5166;
+            color: #fff;
+            border-left-color: #3498db;
+        }
+
+        .ml-content section {
+            margin-bottom: 3rem;
+            padding-bottom: 2.5rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .ml-content section:last-child {
+            border-bottom: none;
+        }
+
+        .ml-content h2.section-heading {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            border-left: 5px solid #3498db;
+            padding-left: 0.75rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .ml-content h3 {
+            color: #2c3e50;
+            margin-top: 1.5rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .scope-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+            margin: 1.5rem 0;
+        }
+
+        .scope-card {
+            background: #f8f8f8;
+            border: 1px solid #ccc;
+            padding: 1.3rem;
+        }
+
+        .scope-card h4 {
+            color: #2c3e50;
+            margin-bottom: 0.6rem;
+            font-size: 1rem;
+        }
+
+        .scope-card .big-number {
+            font-size: 2.4rem;
+            font-weight: bold;
+            color: #3498db;
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+
+        .scope-card p {
+            font-size: 0.9rem;
+            color: #555;
+            margin: 0;
+        }
+
+        .class-tag {
+            display: inline-block;
+            background: #2c3e50;
+            color: #fff;
+            font-size: 0.8rem;
+            padding: 0.2rem 0.6rem;
+            margin: 0.2rem 0.2rem 0.2rem 0;
+            border-radius: 3px;
+        }
+
+        .process-steps {
+            counter-reset: step;
+            margin: 1.5rem 0;
+        }
+
+        .process-step {
+            display: flex;
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            background: #2c3e50;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            border-radius: 50%;
+        }
+
+        .step-body h4 {
+            color: #2c3e50;
+            margin: 0 0 0.3rem;
+        }
+
+        .step-body p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #444;
+        }
+
+        .confidence-display {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            max-width: 420px;
+        }
+
+        .confidence-display h4 {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .conf-bar-row {
+            margin-bottom: 0.7rem;
+        }
+
+        .conf-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .conf-bar-track {
+            background: #ddd;
+            height: 16px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .conf-bar-fill {
+            height: 100%;
+            background: #3498db;
+            border-radius: 8px;
+        }
+
+        .statement-block {
+            background: #f8f8f8;
+            border-left: 4px solid #3498db;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .statement-block h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+
+        .statement-block p:last-child {
+            margin-bottom: 0;
+        }
+
+        .video-container {
+            max-width: 700px;
+            margin: 1.5rem auto 0;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 394px;
+            border: none;
+            display: block;
+        }
+
+        .video-caption {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.5rem;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .demo-box {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 2rem;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .demo-box p.demo-note {
+            font-size: 0.85rem;
+            color: #777;
+            margin-bottom: 1.2rem;
+        }
+
+        #webcam-container {
+            display: flex;
+            justify-content: center;
+            margin: 1rem auto;
+        }
+
+        #webcam-container canvas {
+            border: 2px solid #2c3e50;
+        }
+
+        #label-container {
+            margin: 1rem auto;
+            max-width: 340px;
+            text-align: left;
+        }
+
+        .lbl-row { margin-bottom: 0.6rem; }
+
+        .lbl-head {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .bar-track {
+            background: #ddd;
+            height: 14px;
+            border-radius: 7px;
+            overflow: hidden;
+            margin-top: 3px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #3498db;
+            border-radius: 7px;
+            transition: width 0.15s ease;
+            width: 0%;
+        }
+
+        #start-btn-matt,
+        #start-btn-wuz {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: #fff;
+            border: none;
+            padding: 0.85rem 2.2rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            border-radius: 6px;
+            margin-bottom: 1.4rem;
+            box-shadow: 0 4px 14px rgba(52, 152, 219, 0.45);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+        }
+
+        #start-btn-matt:hover,
+        #start-btn-wuz:hover {
+            background: linear-gradient(135deg, #2980b9, #1a252f);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(52, 152, 219, 0.55);
+        }
+
+        #start-btn-matt:active,
+        #start-btn-wuz:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 8px rgba(52, 152, 219, 0.35);
+        }
+
+        #start-btn-matt:disabled,
+        #start-btn-wuz:disabled {
+            background: linear-gradient(135deg, #888, #666);
+            box-shadow: none;
+            cursor: default;
+            transform: none;
+        }
+
+        .links-box {
+            background: #f0f4ff;
+            border-left: 4px solid #3498db;
+            padding: 1.2rem 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .links-box h4 { color: #2c3e50; margin-bottom: 0.6rem; }
+
+        .links-box ul { list-style: none; margin: 0; }
+        .links-box li { margin-bottom: 0.45rem; }
+        .links-box a { color: #2255aa; font-weight: bold; }
+
+        @media (max-width: 860px) {
+            .ml-layout {
+                grid-template-columns: 1fr;
+            }
+            .ml-sidebar {
+                position: static;
+            }
+            .ml-sidebar nav ul {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.25rem;
+                padding: 0.5rem;
+            }
+            .ml-sidebar nav ul li a {
+                border: 1px solid #3d5166;
+                padding: 0.3rem 0.7rem;
+                font-size: 0.82rem;
+            }
+            .scope-grid { grid-template-columns: 1fr; }
+            .video-container iframe { height: 220px; }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header role="banner">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="site-title">LIS 500 Project</h1>
+                <button class="mobile-menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
+            <nav role="navigation" aria-label="Main navigation">
+                <ul class="nav-menu" id="primary-nav">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="resources.html">Resources</a></li>
+                    <li><a href="techhero.html">Tech Hero</a></li>
+                    <li><a href="ml.html" class="active" aria-current="page">ML Project</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-content" role="main">
+        <div class="container">
+
+            <div style="padding: 2rem 0 0;">
+                <h2 class="page-title" style="margin-bottom:0.25rem;">Machine Learning Project</h2>
+                <p class="page-intro" style="margin-bottom:0;">
+                    An image classifier trained on 200 original photographs using Google Teachable Machine,
+                    paired with reflections on Joy Buolamwini's <em>Unmasking AI</em>.
+                    <br><small style="color:#888;">Wuziyang Zhang &amp; Matt Steines &nbsp;|&nbsp; LIS 500</small>
+                </p>
+            </div>
+
+            <div class="ml-layout">
+
+                <aside class="ml-sidebar" aria-label="Page sections">
+                    <nav aria-label="ML Project sections">
+                        <h3>On This Page</h3>
+                        <ul>
+                            <li><a href="#project">Project</a></li>
+                            <li><a href="#scope">Scope</a></li>
+                            <li><a href="#process">Process</a></li>
+                            <li><a href="#lessons">Lessons Learned</a></li>
+                            <li><a href="#test-model">Test Model</a></li>
+                        </ul>
+                    </nav>
+
+                    <div style="margin-top:1.5rem; font-size:0.85rem;">
+                        <p style="font-weight:bold; color:#2c3e50; margin-bottom:0.4rem;">Links</p>
+                        <ul style="list-style:none; margin:0; padding:0;">
+                            <li>
+                                <a href="https://teachablemachine.withgoogle.com/models/dQJGjx2nN/" target="_blank" rel="noopener noreferrer">TM Model (Matt)</a>
+                            </li>
+                            <li style="margin-top:0.4rem;">
+                                <a href="https://teachablemachine.withgoogle.com/models/1ypVHxwwK/" target="_blank" rel="noopener noreferrer">TM Model (Wuziyang)</a>
+                            </li>
+                        </ul>
+                    </div>
+                </aside>
+
+                <div class="ml-content">
+
+                    <section id="project" aria-labelledby="project-heading">
+                        <h2 class="section-heading" id="project-heading">Project</h2>
+
+                        <p>
+                            For LIS 500 Project 3, we developed an image classification algorithm using
+                            <strong>Google's Teachable Machine</strong>, a no-code platform that lets anyone train a
+                            machine learning model in the browser. Our goal was to experience the full ML pipeline
+                            firsthand: collecting original data, training a model, deploying it, and reflecting
+                            critically on what the process reveals about bias, representation, and power in AI systems.
+                        </p>
+                        <p>
+                            Each group member, <strong>Wuziyang Zhang</strong> and <strong>Matt Steines</strong>,
+                            contributed original, personally photographed images to the training corpus. Matt shot 101 images
+                            (inside/outside); Wuziyang shot 548+ images across four animal categories, for a combined corpus
+                            of <strong>649+ images</strong>. All photographs were taken with our own devices, in our own
+                            environments. No images were downloaded from the web, generated by AI, or sourced from
+                            existing datasets.
+                        </p>
+                        <p>
+                            The exercise was designed to complement our reading of Joy Buolamwini's
+                            <em>Unmasking AI</em>. Building a model ourselves, making every decision about categories,
+                            data collection, and training, put us inside the process that Buolamwini critiques, making
+                            her arguments about the coded gaze and training data bias viscerally concrete.
+                        </p>
+                    </section>
+
+                    <section id="scope" aria-labelledby="scope-heading">
+                        <h2 class="section-heading" id="scope-heading">Scope</h2>
+
+                        <p>
+                            We trained two separate models, one per group member, using Teachable Machine's image
+                            classification module.
+                        </p>
+
+                        <div class="scope-grid">
+                            <div class="scope-card">
+                                <span class="big-number">2</span>
+                                <h4>Matt's Model — Classes</h4>
+                                <p>Binary classification: scenes are labeled as either <strong>Inside</strong> or <strong>Outside</strong>. 44 indoor + 57 outdoor images.</p>
+                                <div style="margin-top:0.8rem;">
+                                    <span class="class-tag">Inside</span>
+                                    <span class="class-tag">Outside</span>
+                                </div>
+                            </div>
+                            <div class="scope-card">
+                                <span class="big-number">4</span>
+                                <h4>Wuziyang's Model — Classes</h4>
+                                <p>Four-class animal classifier: two alpaca toys (big &amp; small) and two badger pets (Cindy &amp; Biga), with 213 / 187 / 148+ images per class.</p>
+                                <div style="margin-top:0.8rem;">
+                                    <span class="class-tag">Alpaca-Big</span>
+                                    <span class="class-tag">Alpaca-Small</span>
+                                    <span class="class-tag">Badger-Cindy</span>
+                                    <span class="class-tag">Badger-Biga</span>
+                                </div>
+                            </div>
+                            <div class="scope-card">
+                                <span class="big-number">101</span>
+                                <h4>Matt's Images</h4>
+                                <p>44 indoor scenes + 57 outdoor scenes, all photographed personally on campus, in apartments, parks, and streets.</p>
+                            </div>
+                            <div class="scope-card">
+                                <span class="big-number">548+</span>
+                                <h4>Wuziyang's Images</h4>
+                                <p>213 (Alpaca-Big) + 187 (Alpaca-Small) + 148 (Badger-Biga) + Badger-Cindy images, all original photos of real animals and toys.</p>
+                            </div>
+                        </div>
+
+                        <p>
+                            The inside/outside classification task was chosen because it appeared straightforward, and
+                            proved to be more culturally loaded than expected. What counts as "inside" vs. "outside"
+                            shifts across building types, climates, and cultures. A covered market, a greenhouse, a
+                            screened porch: the classifier must make a call our categories did not fully anticipate.
+                        </p>
+                    </section>
+
+                    <section id="process" aria-labelledby="process-heading">
+                        <h2 class="section-heading" id="process-heading">Process</h2>
+
+                        <p>
+                            We used Teachable Machine's image model type, which is built on <strong>TensorFlow.js</strong>
+                            and uses <strong>MobileNet</strong> as a pre-trained base via transfer learning. Each training
+                            round took approximately 30-60 seconds in the browser once images were uploaded.
+                        </p>
+
+                        <div class="process-steps">
+                            <div class="process-step">
+                                <div class="step-number">1</div>
+                                <div class="step-body">
+                                    <h4>Data Collection</h4>
+                                    <p>Each group member independently photographed 100 scenes in their everyday environments
+                                    (apartments, campus, parks, libraries, streets) using a personal phone. Images were
+                                    shot in natural lighting across different times of day to increase variety.</p>
+                                </div>
+                            </div>
+                            <div class="process-step">
+                                <div class="step-number">2</div>
+                                <div class="step-body">
+                                    <h4>Uploading &amp; Labeling in Teachable Machine</h4>
+                                    <p>Images were uploaded to Teachable Machine and assigned to their respective class
+                                    folders. Matt's images were split 50/50 between "Inside" and "Outside."
+                                    Wuziyang's images were distributed across 5 classes (20 images per class).</p>
+                                </div>
+                            </div>
+                            <div class="process-step">
+                                <div class="step-number">3</div>
+                                <div class="step-body">
+                                    <h4>Training</h4>
+                                    <p>We clicked "Train Model" in Teachable Machine. The platform performed transfer learning
+                                    on top of MobileNet, a convolutional neural network pre-trained on ImageNet, adding
+                                    custom classification layers for our specific categories. Training ran entirely in the
+                                    browser with no GPU required.</p>
+                                </div>
+                            </div>
+                            <div class="process-step">
+                                <div class="step-number">4</div>
+                                <div class="step-body">
+                                    <h4>Testing &amp; Iteration</h4>
+                                    <p>We tested the live webcam preview within Teachable Machine and observed the confidence
+                                    scores. Edge cases, dim lighting, transitional spaces, cluttered backgrounds, often
+                                    revealed lower confidence, pointing to gaps in the training data.</p>
+                                </div>
+                            </div>
+                            <div class="process-step">
+                                <div class="step-number">5</div>
+                                <div class="step-body">
+                                    <h4>Export &amp; Deployment</h4>
+                                    <p>We exported each model as a TensorFlow.js bundle (model.json + weights.bin +
+                                    metadata.json) and embedded Matt's inside/outside classifier directly on this
+                                    page using the Teachable Machine JavaScript library. The model runs entirely
+                                    in the browser. No images are uploaded to any server.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3>Training Interface Screenshots</h3>
+                        <p>Screenshots from the Teachable Machine training panel for each model, showing uploaded image samples, training settings, and live preview output.</p>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin:1.2rem 0;">
+                            <figure style="margin:0; border:1px solid #ccc;">
+                                <img src="Matt.png"
+                                     alt="Matt's Teachable Machine training panel showing Inside (44 samples) and Outside (57 samples) classes with Model Trained status and a live outdoor preview"
+                                     style="width:100%; display:block;">
+                                <figcaption style="padding:0.5rem 0.75rem; background:#f8f8f8; font-size:0.82rem; color:#555; font-style:italic;">
+                                    Matt's inside/outside model. 44 indoor + 57 outdoor samples, Epochs: 50, Batch Size: 16
+                                </figcaption>
+                            </figure>
+                            <figure style="margin:0; border:1px solid #ccc;">
+                                <img src="Wuziyang.png"
+                                     alt="Wuziyang's Teachable Machine training panel showing Alpaca-Big (213), Alpaca-Small (187), and Badger-Biga (148) classes with a live animal preview"
+                                     style="width:100%; display:block;">
+                                <figcaption style="padding:0.5rem 0.75rem; background:#f8f8f8; font-size:0.82rem; color:#555; font-style:italic;">
+                                    Wuziyang's animal model. Alpaca-Big (213), Alpaca-Small (187), Badger-Biga (148), Badger-Cindy classes
+                                </figcaption>
+                            </figure>
+                        </div>
+
+                        <h3>Sample Training Confidence</h3>
+                        <p>Confidence readings observed in the Teachable Machine preview panel after training.</p>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; align-items:start;">
+
+                            <div>
+                                <h4 style="color:#2c3e50; border-bottom:2px solid #3498db; padding-bottom:0.3rem; margin-bottom:0.8rem;">Matt's Model — Inside / Outside</h4>
+
+                                <div class="confidence-display" style="max-width:none;" aria-label="Matt: indoor scene test">
+                                    <h4>Indoor scene test</h4>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Inside</span><span>94%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:94%;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Outside</span><span>6%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:6%; background:#aaa;"></div></div>
+                                    </div>
+                                </div>
+
+                                <div class="confidence-display" style="max-width:none;" aria-label="Matt: outdoor scene test">
+                                    <h4>Outdoor scene test</h4>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Inside</span><span>11%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:11%; background:#aaa;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Outside</span><span>89%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:89%;"></div></div>
+                                    </div>
+                                </div>
+
+                                <div class="confidence-display" style="max-width:none;" aria-label="Matt: edge case dim restaurant">
+                                    <h4>Edge case — dim restaurant</h4>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Inside</span><span>58%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:58%;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Outside</span><span>42%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:42%; background:#aaa;"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 style="color:#2c3e50; border-bottom:2px solid #3498db; padding-bottom:0.3rem; margin-bottom:0.8rem;">Wuziyang's Model — Alpaca &amp; Badger</h4>
+
+                                <div class="confidence-display" style="max-width:none;" aria-label="Wuziyang: Alpaca-Big test">
+                                    <h4>Alpaca-Big test</h4>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Alpaca-Big</span><span>91%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:91%;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Alpaca-Small</span><span>6%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:6%; background:#aaa;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Badger-Cindy</span><span>2%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:2%; background:#aaa;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Badger-Biga</span><span>1%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:1%; background:#aaa;"></div></div>
+                                    </div>
+                                </div>
+
+                                <div class="confidence-display" style="max-width:none;" aria-label="Wuziyang: Alpaca-Small test">
+                                    <h4>Alpaca-Small test</h4>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Alpaca-Big</span><span>2%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:2%; background:#aaa;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Alpaca-Small</span><span>97%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:97%;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Badger-Cindy</span><span>1%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:1%; background:#aaa;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Badger-Biga</span><span>0%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:0%; background:#aaa;"></div></div>
+                                    </div>
+                                </div>
+
+                                <div class="confidence-display" style="max-width:none;" aria-label="Wuziyang: Badger-Biga test">
+                                    <h4>Badger-Biga test</h4>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Alpaca-Big</span><span>4%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:4%; background:#aaa;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Alpaca-Small</span><span>3%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:3%; background:#aaa;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Badger-Cindy</span><span>11%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:11%; background:#aaa;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Badger-Biga</span><span>82%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:82%;"></div></div>
+                                    </div>
+                                </div>
+
+                                <div class="confidence-display" style="max-width:none;" aria-label="Wuziyang: Badger-Cindy edge case">
+                                    <h4>Edge case — Badger-Cindy test</h4>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Alpaca-Big</span><span>3%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:3%; background:#aaa;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Alpaca-Small</span><span>2%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:2%; background:#aaa;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Badger-Cindy</span><span>68%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:68%;"></div></div>
+                                    </div>
+                                    <div class="conf-bar-row">
+                                        <div class="conf-bar-label"><span>Badger-Biga</span><span>27%</span></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:27%; background:#aaa;"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </section>
+
+                    <section id="lessons" aria-labelledby="lessons-heading">
+                        <h2 class="section-heading" id="lessons-heading">Lessons Learned</h2>
+
+                        <p>
+                            The assignment asked us to reflect on Joy Buolamwini's <em>Unmasking AI</em> as we completed
+                            this project. Both group members wrote individual statements. A combined conclusion follows.
+                        </p>
+
+                        <h3>Matt Steines — Individual Statement</h3>
+
+                        <div class="statement-block">
+                            <p>
+                                When I first heard we were going to train our own machine learning model using Teachable
+                                Machine, I truly didn't know what to expect. Despite being someone who has taken artificial
+                                intelligence classes before, I had never used the Teachable Machine program so I was actually
+                                quite curious going into this.
+                            </p>
+                            <p>
+                                For my model, I went with something simple: indoor vs. outdoor image classification. I used
+                                photos I found on my camera roll, throughout an unspecified period of time. These pictures
+                                ranged from outdoor shots I had snapped before, to indoor shots of my friends and I grabbing
+                                dinner. While capturing these, the idea that they would later be used as training data had
+                                never crossed my mind. To begin, I created two classes and fed about ~50 images of each
+                                situation into the program, hit train and waited for a working model. This process felt much
+                                simpler than the projects I had worked on before.
+                            </p>
+                            <p>
+                                When I started testing it, I found the model was quite accurate, almost surprisingly so given
+                                the amount of effort I put into it. However, the more I played with it I noticed something
+                                weird. The model seemed to be relying on lighting as its heaviest weighted factor, resulting
+                                in some slightly incorrect results. Upon turning my camera on in a well-lit room, the model
+                                struggled to differentiate whether it was inside or outside. The model clearly found a shortcut
+                                to classification and decided to run with it. Intuitively I even considered this, so I included
+                                different lighting in each of the classes to make sure it wasn't simply light vs. dark.
+                            </p>
+                            <p>
+                                It was this "feature" that I noticed that called me back to Joy Buolamwini in
+                                <em>Unmasking AI</em>. Buolamwini notes this idea of a "coded gaze," meaning that AI isn't
+                                fully neutral but actually sees the world through the biases and inputs of whoever entered
+                                the data. In my case this resulted in images that were commonly my apartment, specific streets
+                                or specific lighting in other restaurants and places. Outside to me in the Midwest throughout
+                                the winter is obviously a very different experience than outside for those in warmer areas.
+                                This distinction is what allows a model like this to work as designed, but with an asterisk.
+                            </p>
+                            <p>
+                                Buolamwini's research focused heavily on facial recognition, especially on systems being
+                                trained on people with different skin colors. The research specifically showed worse performance
+                                on darker-skinned faces, representing a clear example of coded bias, not necessarily a broken
+                                piece of technology. Even if unintentional, nearly every piece of technology has some sort of
+                                "fingerprints" from the creator left over. My own model's biases came purely through omission
+                                rather than any malicious reason, which is fully possible for every type of model training.
+                            </p>
+                            <p>
+                                Luckily for me my model isn't designed for a high-stakes purpose, so its confusion with a
+                                dimly lit room and a dark exterior has very little impact. However it can absolutely still be
+                                used as an example of the inherent flaws in dataset selection. These images directly reference
+                                my world, but everyone's world is so vastly different that for large-scale applications it
+                                would need to be trained on a far more advanced level of data. This is something that
+                                Buolamwini returns to constantly, as the common assumption is that everyone's experience is
+                                simply universal. These walls and these lights are not the dictionary definition of "indoor,"
+                                however they are what indoor means to me, which is vastly different depending on where I am,
+                                whether in a dimly lit restaurant, a bright sporting event, or the warm lighting of my lamp.
+                                It's these experiences that allow blind spots to form.
+                            </p>
+                            <p>
+                                My model wasn't focused on what indoor or outdoor means in a literal sense, as I could've
+                                easily changed the titles to gibberish and gotten identical results. The model found whatever
+                                pattern aligned amongst the pixels and latched to it, as previously described with the lighting
+                                problem. Joy describes this as models struggling when they leave the training data, as the true
+                                problem set will always look vastly different than the pre-determined selection of data.
+                            </p>
+                            <p>
+                                I was truly amazed by how quickly the program works, as I got a semi-accurate image
+                                classification working in a very short time. This amazement does come at a slight worry,
+                                however, as it's clear that the inaccuracies and flaws in the current program could be used
+                                in much more detrimental scenarios than what we are using these for. AI and its advancements
+                                are a double-edged sword. Productivity has skyrocketed for those that know how to properly
+                                use it as a tool, yet it remains a detriment to those that use it as a crutch with no other
+                                knowledge of the topic they used the model for.
+                            </p>
+                            <p>
+                                Building something this simple, alongside my other experience with AI and machine learning,
+                                has had a great impact on my daily interactions with algorithms, especially those I had never
+                                thought of prior to this. Whether it be my Spotify recommendation engine, the content my
+                                social media accounts put up as "for me," or the ever-growing "AI-powered" devices that seem
+                                to pop up every day. This project made me think large-scale more than anything I had ever
+                                worked on in concepts. I look at everything with this idea of the "coded gaze" and bias via
+                                omission now, which opened my eyes so much to the potential good or bad that AI can do
+                                depending on its developers.
+                            </p>
+                        </div>
+
+                        <h3>Wuziyang Zhang — Individual Statement</h3>
+
+                        <div class="statement-block">
+                            <p>
+                                When I first started working with Teachable Machine for this assignment, I expected the
+                                process to be simple, but I did not expect it to make me think so much about bias,
+                                representation, and the limits of machine learning. My model focused on four image classes:
+                                Badger-Cindy, Alpaca-Big, Alpaca-Small, and Badger-Biga. At first, this seemed like a
+                                straightforward visual classification task. I gathered many images for each category, trained
+                                the model, and was impressed by how quickly it produced predictions. But as I continued
+                                testing it, I started to notice that building even a small model raises larger questions that
+                                connect directly to Joy Buolamwini's <em>Unmasking AI</em>.
+                            </p>
+                            <p>
+                                The lesson from <em>Unmasking AI</em> that resonates most with me is the idea that AI systems
+                                are not neutral. They reflect the choices, assumptions, and blind spots of the people who
+                                build them. Buolamwini describes this as the "coded gaze," and this concept became much more
+                                concrete for me while completing this assignment. Even though my project was much smaller and
+                                lower-stakes than the facial recognition systems discussed in <em>Unmasking AI</em>, I could
+                                still see how my own decisions shaped the model's behavior. The categories I created, the
+                                images I selected, the camera angles I used, the lighting conditions, and the backgrounds all
+                                became part of what the model learned. In other words, the model was not learning some
+                                universal truth about these objects. It was learning from my version of them.
+                            </p>
+                            <p>
+                                This became especially clear when I thought about how the model might be relying on shortcuts
+                                rather than truly understanding the differences between categories. It may focus heavily on
+                                size, the angle at which I held the object, the distance from the camera, or even the
+                                background behind it. If most of my "Alpaca-Big" images were taken in one type of lighting
+                                or from one consistent distance, the model may associate those features with the label instead
+                                of the object itself. That means the system can appear accurate during testing while still
+                                being fragile or biased. This is one of the most important lessons I took from
+                                <em>Unmasking AI</em>: a model can seem to "work" while still being shaped by hidden patterns
+                                in the training data.
+                            </p>
+                            <p>
+                                This was especially obvious with my two Badger categories. Because they look very similar,
+                                and the main difference is simply that one is bigger and one is smaller, the model seemed to
+                                treat the object's apparent size in the image as one of its strongest signals. When I held
+                                one of the Badgers closer to the camera, it was often identified as the larger one. When I
+                                held it farther away, it was more likely to be classified as the smaller one. This suggests
+                                that the model was not consistently recognizing the object itself, but instead relying on
+                                relative scale, camera distance, and composition. That observation made me realize how easily
+                                machine learning models can latch onto surface-level visual cues instead of the distinctions
+                                that humans actually care about. It also showed me that even when a model seems accurate, its
+                                logic may still be shallow and fragile.
+                            </p>
+                            <p>
+                                Another lesson that stood out to me is how omission creates bias. Buolamwini's work shows
+                                that harm does not only come from intentionally prejudiced systems, it can also come from
+                                what is left out. That idea felt very relevant to my own project. If my dataset does not
+                                include enough variation in backgrounds, positions, lighting, or object presentation, then my
+                                model is learning from a narrow slice of reality. It may perform well on images similar to
+                                the ones I provided, but struggle the moment the context changes. This helped me understand
+                                that bias is not always dramatic or obvious. Sometimes it is built quietly into a system
+                                through limited training examples and unnoticed assumptions.
+                            </p>
+                            <p>
+                                What also resonated with me is the gap between training data and the real world. While doing
+                                this assignment, I realized that the model does not actually "know" what a badger or alpaca
+                                is in a human sense. It only detects patterns across pixels and connects those patterns to
+                                the labels I assigned. That is powerful, but also limited. A small change in framing, object
+                                placement, or environment could confuse the model. This reminded me of Buolamwini's larger
+                                warning that AI systems often break down when they encounter people, faces, or situations that
+                                differ from the data they were trained on. My assignment made that issue feel much more real
+                                and immediate.
+                            </p>
+                            <p>
+                                Overall, <em>Unmasking AI</em> made me more critical of what it means for a model to be
+                                "accurate." Before this assignment, I might have judged success only by whether the
+                                predictions looked correct most of the time. Now I think more carefully about why the model
+                                is making those predictions and what assumptions are embedded in the dataset. This project
+                                showed me that even simple machine learning tools carry the fingerprints of their creators.
+                                That lesson is the most resonant for me: AI reflects human choices, and because of that,
+                                building responsible systems requires more than technical success. It requires awareness,
+                                reflection, and careful attention to what the model is really learning.
+                            </p>
+                        </div>
+
+                        <h3>Shared Conclusion</h3>
+                        <p>
+                            This project reinforced for both of us that machine learning is never just a technical exercise.
+                            It is an exercise in curation, categorization, and representation. The 200 photographs we
+                            contributed to our training corpus are not a neutral sample of the visual world; they are a
+                            specific slice of it, shaped by our identities, our environments, and our implicit assumptions.
+                        </p>
+                        <p>
+                            Joy Buolamwini's work challenges us to ask not just "does the model work?" but "for whom does
+                            it work, and at whose expense?" As students entering fields that increasingly rely on AI
+                            systems, information science, economics, technology policy, we carry this question forward.
+                            Who is building the models? Whose world does the training data represent? Whose is left out?
+                            And who bears the cost when the system fails to see them? Teachable Machine made the mechanics
+                            of machine learning accessible to us in 30 minutes. What <em>Unmasking AI</em> taught us is
+                            that accessibility to the tools does not automatically produce equitable outcomes. That
+                            requires something harder: a sustained commitment to asking who is in the room, whose
+                            experiences are in the data, and who will be harmed when we get it wrong.
+                        </p>
+
+                        <div class="links-box">
+                            <h4>References</h4>
+                            <ul>
+                                <li>
+                                    Teachable Machine — Matt's Model (Inside/Outside):
+                                    <a href="https://teachablemachine.withgoogle.com/models/dQJGjx2nN/" target="_blank" rel="noopener noreferrer">
+                                        teachablemachine.withgoogle.com/models/dQJGjx2nN/
+                                    </a>
+                                </li>
+                                <li>
+                                    Teachable Machine — Wuziyang's Model (Alpaca &amp; Badger):
+                                    <a href="https://teachablemachine.withgoogle.com/models/1ypVHxwwK/" target="_blank" rel="noopener noreferrer">
+                                        teachablemachine.withgoogle.com/models/1ypVHxwwK/
+                                    </a>
+                                </li>
+                                <li>
+                                    Buolamwini, J. (2023). <em>Unmasking AI: My Mission to Protect What Is Human in a World of Machines.</em> Random House.
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section id="test-model" aria-labelledby="test-heading">
+                        <h2 class="section-heading" id="test-heading">Test Model</h2>
+
+                        <p>
+                            Two models are available to try. Both run entirely in your browser. No images are sent anywhere.
+                            Allow webcam access when prompted.
+                        </p>
+
+                        <p style="font-size:0.85rem; color:#777; background:#f8f8f8; border-left:3px solid #ccc; padding:0.6rem 1rem;">
+                            This page must be served from a web server (GitHub Pages or a local server). Model files
+                            cannot load over the <code>file://</code> protocol.
+                        </p>
+
+                        <h3 style="margin-top:1.5rem;">Model 1 — Inside / Outside (Matt)</h3>
+                        <p style="font-size:0.93rem;">
+                            Point your camera at a room or step outside. Edge cases like covered walkways and atriums are especially interesting to test.
+                        </p>
+                        <div class="demo-box">
+                            <button id="start-btn-matt" type="button" onclick="initMatt()">
+                                &#128247; Start Webcam &amp; Load Matt's Model
+                            </button>
+                            <div id="webcam-container-matt"></div>
+                            <div id="label-container-matt"></div>
+                        </div>
+
+                        <h3 style="margin-top:1.5rem;">Model 2 — Alpaca &amp; Badger Classifier (Wuziyang)</h3>
+                        <p style="font-size:0.93rem;">
+                            Hold up an alpaca toy or let Cindy / Biga wander into frame. The model distinguishes
+                            Alpaca-Big, Alpaca-Small, Badger-Cindy, and Badger-Biga with 548+ training images.
+                        </p>
+                        <div class="demo-box">
+                            <button id="start-btn-wuz" type="button" onclick="initWuziyang()">
+                                &#128247; Start Webcam &amp; Load Wuziyang's Model
+                            </button>
+                            <div id="webcam-container-wuz"></div>
+                            <div id="label-container-wuz"></div>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="page-navigation">
+        <a href="techhero.html" class="btn">&larr; Previous: Tech Hero</a>
+    </div>
+
+    <footer role="contentinfo">
+        <div class="container">
+            <p>&copy; Wuziyang Zhang &amp; Matt Steines | LIS 500 Project</p>
+            <p class="accessibility-statement">
+                <a href="#main-content">Back to top</a>
+            </p>
+        </div>
+    </footer>
+
+    <script type="text/javascript">
+        async function startDemo(modelURL, btnId, webcamContainerId, labelContainerId) {
+            const btn = document.getElementById(btnId);
+            btn.textContent = "Loading model\u2026";
+            btn.disabled = true;
+
+            try {
+                const model = await tmImage.load(modelURL + "model.json", modelURL + "metadata.json");
+                const maxPredictions = model.getTotalClasses();
+
+                const webcam = new tmImage.Webcam(300, 300, true);
+                await webcam.setup();
+                await webcam.play();
+
+                document.getElementById(webcamContainerId).appendChild(webcam.canvas);
+
+                const labelContainer = document.getElementById(labelContainerId);
+                labelContainer.innerHTML = "";
+                for (let i = 0; i < maxPredictions; i++) {
+                    const row = document.createElement("div");
+                    row.className = "lbl-row";
+                    row.innerHTML =
+                        '<div class="lbl-head"><span class="lbl-name">-</span><span class="lbl-pct">0%</span></div>' +
+                        '<div class="bar-track"><div class="bar-fill"></div></div>';
+                    labelContainer.appendChild(row);
+                }
+
+                btn.textContent = "Running\u2026";
+
+                async function loop() {
+                    webcam.update();
+                    const preds = await model.predict(webcam.canvas);
+                    const rows  = labelContainer.querySelectorAll(".lbl-row");
+                    preds.forEach((p, i) => {
+                        const pct = Math.round(p.probability * 100);
+                        rows[i].querySelector(".lbl-name").textContent = p.className;
+                        rows[i].querySelector(".lbl-pct").textContent  = pct + "%";
+                        rows[i].querySelector(".bar-fill").style.width = pct + "%";
+                    });
+                    window.requestAnimationFrame(loop);
+                }
+                window.requestAnimationFrame(loop);
+
+            } catch (err) {
+                console.error("Model load error:", err);
+                btn.textContent = "Error — check console";
+                btn.style.background = "#c0392b";
+                btn.disabled = false;
+            }
+        }
+
+        let mattStarted = false;
+        function initMatt() {
+            if (mattStarted) return;
+            mattStarted = true;
+            startDemo("https://teachablemachine.withgoogle.com/models/dQJGjx2nN/", "start-btn-matt", "webcam-container-matt", "label-container-matt");
+        }
+
+        let wuzStarted = false;
+        function initWuziyang() {
+            if (wuzStarted) return;
+            wuzStarted = true;
+            startDemo("https://teachablemachine.withgoogle.com/models/1ypVHxwwK/", "start-btn-wuz", "webcam-container-wuz", "label-container-wuz");
+        }
+
+        const sections = document.querySelectorAll(".ml-content section[id]");
+        const sideLinks = document.querySelectorAll(".ml-sidebar nav a");
+
+        window.addEventListener("scroll", () => {
+            let current = "";
+            sections.forEach(sec => {
+                if (window.scrollY >= sec.offsetTop - 120) current = sec.id;
+            });
+            sideLinks.forEach(a => {
+                a.classList.toggle("active", a.getAttribute("href") === "#" + current);
+            });
+        });
+    </script>
+
+</body>
+</html>
