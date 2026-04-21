@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Machine Learning Project: Teachable Machine image classifier trained on 200 original images, with reflections on Joy Buolamwini's Unmasking AI">
+    <meta name="description" content="Machine Learning Project: Teachable Machine image classifier trained on 649+ original images, with reflections on Joy Buolamwini's Unmasking AI">
     <title>ML Project | LIS 500 Project</title>
     <link rel="stylesheet" href="stylepage.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -411,11 +411,12 @@
 
     <main id="main-content" role="main">
         <div class="container">
+            <article class="content-wrapper">
 
             <div style="padding: 2rem 0 0;">
                 <h2 class="page-title" style="margin-bottom:0.25rem;">Machine Learning Project</h2>
                 <p class="page-intro" style="margin-bottom:0;">
-                    An image classifier trained on 200 original photographs using Google Teachable Machine,
+                    An image classifier trained on 649+ original photographs using Google Teachable Machine,
                     paired with reflections on Joy Buolamwini's <em>Unmasking AI</em>.
                     <br><small style="color:#888;">Wuziyang Zhang &amp; Matt Steines &nbsp;|&nbsp; LIS 500</small>
                 </p>
@@ -423,15 +424,16 @@
 
             <div class="ml-layout">
 
+                <!-- sidebar nav -->
                 <aside class="ml-sidebar" aria-label="Page sections">
                     <nav aria-label="ML Project sections">
                         <h3>On This Page</h3>
                         <ul>
                             <li><a href="#project">Project</a></li>
                             <li><a href="#scope">Scope</a></li>
+                            <li><a href="#test-model">Test Model</a></li>
                             <li><a href="#process">Process</a></li>
                             <li><a href="#lessons">Lessons Learned</a></li>
-                            <li><a href="#test-model">Test Model</a></li>
                         </ul>
                     </nav>
 
@@ -440,9 +442,11 @@
                         <ul style="list-style:none; margin:0; padding:0;">
                             <li>
                                 <a href="https://teachablemachine.withgoogle.com/models/dQJGjx2nN/" target="_blank" rel="noopener noreferrer">TM Model (Matt)</a>
+                                <div style="font-size:0.75rem; color:#aaa; margin-top:0.15rem;">Binary classifier: Inside vs. Outside scenes</div>
                             </li>
-                            <li style="margin-top:0.4rem;">
+                            <li style="margin-top:0.6rem;">
                                 <a href="https://teachablemachine.withgoogle.com/models/1ypVHxwwK/" target="_blank" rel="noopener noreferrer">TM Model (Wuziyang)</a>
+                                <div style="font-size:0.75rem; color:#aaa; margin-top:0.15rem;">Four-class classifier: Alpaca-Big, Alpaca-Small, Badger-Cindy, Badger-Biga</div>
                             </li>
                         </ul>
                     </div>
@@ -450,6 +454,7 @@
 
                 <div class="ml-content">
 
+                    <!-- project overview -->
                     <section id="project" aria-labelledby="project-heading">
                         <h2 class="section-heading" id="project-heading">Project</h2>
 
@@ -476,6 +481,7 @@
                         </p>
                     </section>
 
+                    <!-- scope and data breakdown -->
                     <section id="scope" aria-labelledby="scope-heading">
                         <h2 class="section-heading" id="scope-heading">Scope</h2>
 
@@ -487,7 +493,7 @@
                         <div class="scope-grid">
                             <div class="scope-card">
                                 <span class="big-number">2</span>
-                                <h4>Matt's Model — Classes</h4>
+                                <h4>Matt's Model: Classes</h4>
                                 <p>Binary classification: scenes are labeled as either <strong>Inside</strong> or <strong>Outside</strong>. 44 indoor + 57 outdoor images.</p>
                                 <div style="margin-top:0.8rem;">
                                     <span class="class-tag">Inside</span>
@@ -496,7 +502,7 @@
                             </div>
                             <div class="scope-card">
                                 <span class="big-number">4</span>
-                                <h4>Wuziyang's Model — Classes</h4>
+                                <h4>Wuziyang's Model: Classes</h4>
                                 <p>Four-class animal classifier: two alpaca toys (big &amp; small) and two badger pets (Cindy &amp; Biga), with 213 / 187 / 148+ images per class.</p>
                                 <div style="margin-top:0.8rem;">
                                     <span class="class-tag">Alpaca-Big</span>
@@ -523,8 +529,87 @@
                             shifts across building types, climates, and cultures. A covered market, a greenhouse, a
                             screened porch: the classifier must make a call our categories did not fully anticipate.
                         </p>
+
+                        <!-- dataset availability - update the href below with the actual github repo url -->
+                        <div class="links-box" style="margin-top:1.2rem;">
+                            <h4>Dataset</h4>
+                            <p style="margin:0 0 0.5rem; font-size:0.93rem;">
+                                All 649+ training images are original photographs taken by Matt and Wuziyang on personal
+                                devices. No downloaded or AI-generated images were used. The full dataset is available
+                                for download below.
+                            </p>
+                            <ul>
+                                <li>
+                                    <a href="photo-matt.zip" download>Download Matt's dataset</a>
+                                    <span style="color:#555;"> — 101 original images (Inside / Outside)</span>
+                                </li>
+                                <li>
+                                    <a href="photo-wuziyang.zip" download>Download Wuziyang's dataset</a>
+                                    <span style="color:#555;"> — 548+ original images (Alpaca-Big, Alpaca-Small, Badger-Cindy, Badger-Biga)</span>
+                                </li>
+                            </ul>
+                        </div>
                     </section>
 
+                    <!-- live demo - try the models in your browser -->
+                    <section id="test-model" aria-labelledby="test-heading">
+                        <h2 class="section-heading" id="test-heading">Test Model</h2>
+
+                        <p>
+                            Two models are available to try. Both run entirely in your browser. No images are sent anywhere.
+                            Allow webcam access when prompted.
+                        </p>
+
+                        <p style="font-size:0.85rem; color:#777; background:#f8f8f8; border-left:3px solid #ccc; padding:0.6rem 1rem;">
+                            This page must be served from a web server (GitHub Pages or a local server). Model files
+                            cannot load over the <code>file://</code> protocol.
+                        </p>
+
+                        <h3 style="margin-top:1.5rem;">Model 1: Inside / Outside (Matt)</h3>
+                        <p style="font-size:0.93rem;">
+                            Point your camera at a room or step outside. Edge cases like covered walkways and atriums are especially interesting to test.
+                        </p>
+
+                        <!-- matt's demo video -->
+                        <div class="video-container" style="margin-bottom:1.5rem;">
+                            <video controls width="100%" style="border:1px solid #ccc; display:block;">
+                                <source src="demo-matt.mp4" type="video/mp4">
+                            </video>
+                            <p class="video-caption">Matt's inside/outside model running live in Teachable Machine</p>
+                        </div>
+
+                        <div class="demo-box">
+                            <button id="start-btn-matt" type="button" onclick="initMatt()">
+                                &#128247; Start Webcam &amp; Load Matt's Model
+                            </button>
+                            <div id="webcam-container-matt"></div>
+                            <div id="label-container-matt"></div>
+                        </div>
+
+                        <h3 style="margin-top:1.5rem;">Model 2: Alpaca &amp; Badger Classifier (Wuziyang)</h3>
+                        <p style="font-size:0.93rem;">
+                            Hold up an alpaca toy or let Cindy / Biga wander into frame. The model distinguishes
+                            Alpaca-Big, Alpaca-Small, Badger-Cindy, and Badger-Biga with 548+ training images.
+                        </p>
+
+                        <!-- wuziyang's demo video -->
+                        <div class="video-container" style="margin-bottom:1.5rem;">
+                            <video controls width="100%" style="border:1px solid #ccc; display:block;">
+                                <source src="demo-wuziyang.mp4" type="video/mp4">
+                            </video>
+                            <p class="video-caption">Wuziyang's alpaca and badger classifier running live in Teachable Machine</p>
+                        </div>
+
+                        <div class="demo-box">
+                            <button id="start-btn-wuz" type="button" onclick="initWuziyang()">
+                                &#128247; Start Webcam &amp; Load Wuziyang's Model
+                            </button>
+                            <div id="webcam-container-wuz"></div>
+                            <div id="label-container-wuz"></div>
+                        </div>
+                    </section>
+
+                    <!-- how we collected data and trained the models -->
                     <section id="process" aria-labelledby="process-heading">
                         <h2 class="section-heading" id="process-heading">Process</h2>
 
@@ -550,7 +635,7 @@
                                     <h4>Uploading &amp; Labeling in Teachable Machine</h4>
                                     <p>Images were uploaded to Teachable Machine and assigned to their respective class
                                     folders. Matt's images were split 50/50 between "Inside" and "Outside."
-                                    Wuziyang's images were distributed across 5 classes (20 images per class).</p>
+                                    Wuziyang's images were distributed across 4 classes with 100+ images per class.</p>
                                 </div>
                             </div>
                             <div class="process-step">
@@ -612,7 +697,7 @@
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; align-items:start;">
 
                             <div>
-                                <h4 style="color:#2c3e50; border-bottom:2px solid #3498db; padding-bottom:0.3rem; margin-bottom:0.8rem;">Matt's Model — Inside / Outside</h4>
+                                <h4 style="color:#2c3e50; border-bottom:2px solid #3498db; padding-bottom:0.3rem; margin-bottom:0.8rem;">Matt's Model: Inside / Outside</h4>
 
                                 <div class="confidence-display" style="max-width:none;" aria-label="Matt: indoor scene test">
                                     <h4>Indoor scene test</h4>
@@ -639,7 +724,7 @@
                                 </div>
 
                                 <div class="confidence-display" style="max-width:none;" aria-label="Matt: edge case dim restaurant">
-                                    <h4>Edge case — dim restaurant</h4>
+                                    <h4>Edge case: dim restaurant</h4>
                                     <div class="conf-bar-row">
                                         <div class="conf-bar-label"><span>Inside</span><span>58%</span></div>
                                         <div class="conf-bar-track"><div class="conf-bar-fill" style="width:58%;"></div></div>
@@ -652,13 +737,13 @@
                             </div>
 
                             <div>
-                                <h4 style="color:#2c3e50; border-bottom:2px solid #3498db; padding-bottom:0.3rem; margin-bottom:0.8rem;">Wuziyang's Model — Alpaca &amp; Badger</h4>
+                                <h4 style="color:#2c3e50; border-bottom:2px solid #e67e22; padding-bottom:0.3rem; margin-bottom:0.8rem;">Wuziyang's Model: Alpaca &amp; Badger</h4>
 
                                 <div class="confidence-display" style="max-width:none;" aria-label="Wuziyang: Alpaca-Big test">
                                     <h4>Alpaca-Big test</h4>
                                     <div class="conf-bar-row">
                                         <div class="conf-bar-label"><span>Alpaca-Big</span><span>91%</span></div>
-                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:91%;"></div></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:91%; background:#e67e22;"></div></div>
                                     </div>
                                     <div class="conf-bar-row">
                                         <div class="conf-bar-label"><span>Alpaca-Small</span><span>6%</span></div>
@@ -682,7 +767,7 @@
                                     </div>
                                     <div class="conf-bar-row">
                                         <div class="conf-bar-label"><span>Alpaca-Small</span><span>97%</span></div>
-                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:97%;"></div></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:97%; background:#e67e22;"></div></div>
                                     </div>
                                     <div class="conf-bar-row">
                                         <div class="conf-bar-label"><span>Badger-Cindy</span><span>1%</span></div>
@@ -710,12 +795,12 @@
                                     </div>
                                     <div class="conf-bar-row">
                                         <div class="conf-bar-label"><span>Badger-Biga</span><span>82%</span></div>
-                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:82%;"></div></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:82%; background:#e67e22;"></div></div>
                                     </div>
                                 </div>
 
                                 <div class="confidence-display" style="max-width:none;" aria-label="Wuziyang: Badger-Cindy edge case">
-                                    <h4>Edge case — Badger-Cindy test</h4>
+                                    <h4>Edge case: Badger-Cindy test</h4>
                                     <div class="conf-bar-row">
                                         <div class="conf-bar-label"><span>Alpaca-Big</span><span>3%</span></div>
                                         <div class="conf-bar-track"><div class="conf-bar-fill" style="width:3%; background:#aaa;"></div></div>
@@ -726,7 +811,7 @@
                                     </div>
                                     <div class="conf-bar-row">
                                         <div class="conf-bar-label"><span>Badger-Cindy</span><span>68%</span></div>
-                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:68%;"></div></div>
+                                        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:68%; background:#e67e22;"></div></div>
                                     </div>
                                     <div class="conf-bar-row">
                                         <div class="conf-bar-label"><span>Badger-Biga</span><span>27%</span></div>
@@ -738,6 +823,7 @@
                         </div>
                     </section>
 
+                    <!-- individual reflections + shared conclusion -->
                     <section id="lessons" aria-labelledby="lessons-heading">
                         <h2 class="section-heading" id="lessons-heading">Lessons Learned</h2>
 
@@ -746,7 +832,7 @@
                             this project. Both group members wrote individual statements. A combined conclusion follows.
                         </p>
 
-                        <h3>Matt Steines — Individual Statement</h3>
+                        <h3>Matt Steines, Individual Statement</h3>
 
                         <div class="statement-block">
                             <p>
@@ -830,7 +916,7 @@
                             </p>
                         </div>
 
-                        <h3>Wuziyang Zhang — Individual Statement</h3>
+                        <h3>Wuziyang Zhang, Individual Statement</h3>
 
                         <div class="statement-block">
                             <p>
@@ -912,7 +998,7 @@
                         <h3>Shared Conclusion</h3>
                         <p>
                             This project reinforced for both of us that machine learning is never just a technical exercise.
-                            It is an exercise in curation, categorization, and representation. The 200 photographs we
+                            It is an exercise in curation, categorization, and representation. The 649+ photographs we
                             contributed to our training corpus are not a neutral sample of the visual world; they are a
                             specific slice of it, shaped by our identities, our environments, and our implicit assumptions.
                         </p>
@@ -932,13 +1018,13 @@
                             <h4>References</h4>
                             <ul>
                                 <li>
-                                    Teachable Machine — Matt's Model (Inside/Outside):
+                                    Teachable Machine, Matt's Model (Inside/Outside):
                                     <a href="https://teachablemachine.withgoogle.com/models/dQJGjx2nN/" target="_blank" rel="noopener noreferrer">
                                         teachablemachine.withgoogle.com/models/dQJGjx2nN/
                                     </a>
                                 </li>
                                 <li>
-                                    Teachable Machine — Wuziyang's Model (Alpaca &amp; Badger):
+                                    Teachable Machine, Wuziyang's Model (Alpaca &amp; Badger):
                                     <a href="https://teachablemachine.withgoogle.com/models/1ypVHxwwK/" target="_blank" rel="noopener noreferrer">
                                         teachablemachine.withgoogle.com/models/1ypVHxwwK/
                                     </a>
@@ -950,47 +1036,9 @@
                         </div>
                     </section>
 
-                    <section id="test-model" aria-labelledby="test-heading">
-                        <h2 class="section-heading" id="test-heading">Test Model</h2>
-
-                        <p>
-                            Two models are available to try. Both run entirely in your browser. No images are sent anywhere.
-                            Allow webcam access when prompted.
-                        </p>
-
-                        <p style="font-size:0.85rem; color:#777; background:#f8f8f8; border-left:3px solid #ccc; padding:0.6rem 1rem;">
-                            This page must be served from a web server (GitHub Pages or a local server). Model files
-                            cannot load over the <code>file://</code> protocol.
-                        </p>
-
-                        <h3 style="margin-top:1.5rem;">Model 1 — Inside / Outside (Matt)</h3>
-                        <p style="font-size:0.93rem;">
-                            Point your camera at a room or step outside. Edge cases like covered walkways and atriums are especially interesting to test.
-                        </p>
-                        <div class="demo-box">
-                            <button id="start-btn-matt" type="button" onclick="initMatt()">
-                                &#128247; Start Webcam &amp; Load Matt's Model
-                            </button>
-                            <div id="webcam-container-matt"></div>
-                            <div id="label-container-matt"></div>
-                        </div>
-
-                        <h3 style="margin-top:1.5rem;">Model 2 — Alpaca &amp; Badger Classifier (Wuziyang)</h3>
-                        <p style="font-size:0.93rem;">
-                            Hold up an alpaca toy or let Cindy / Biga wander into frame. The model distinguishes
-                            Alpaca-Big, Alpaca-Small, Badger-Cindy, and Badger-Biga with 548+ training images.
-                        </p>
-                        <div class="demo-box">
-                            <button id="start-btn-wuz" type="button" onclick="initWuziyang()">
-                                &#128247; Start Webcam &amp; Load Wuziyang's Model
-                            </button>
-                            <div id="webcam-container-wuz"></div>
-                            <div id="label-container-wuz"></div>
-                        </div>
-                    </section>
-
                 </div>
             </div>
+            </article>
         </div>
     </main>
 
@@ -1052,7 +1100,7 @@
 
             } catch (err) {
                 console.error("Model load error:", err);
-                btn.textContent = "Error — check console";
+                btn.textContent = "Error, check console";
                 btn.style.background = "#c0392b";
                 btn.disabled = false;
             }
